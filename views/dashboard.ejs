@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard - <%= user.name %></title>
+  <link rel="stylesheet" href="/styles.css"> <!-- Link your CSS if you have -->
+  <link rel="stylesheet" href="/css/styles.css">
+
+</head>
+<body>
+
+<div class="dashboard-container">
+  <h1>Welcome, <%= user.name %> </h1>
+
+  <a href="blogs/create" class="create-button">+ Create New Blog</a>
+
+  <h2>Your Blogs</h2>
+
+  <% if (blogs && blogs.length > 0) { %>
+    <ul class="blogs-list">
+      <% blogs.forEach(blog => { %>
+        <li>
+          <strong><%= blog.title %></strong><br>
+          <a href="/blogs/<%= blog.id %>">View</a>
+          <a href="/blogs/<%= blog.id %>/edit">Edit</a>
+          <form action="/blogs/<%= blog.id %>/delete"  style="display:inline;">
+            <button type="submit" class="btn">Delete</button>
+          </form>
+        </li>
+      <% }); %>
+    </ul>
+  <% } else { %>
+    <p>You have no blogs yet. Start writing! </p>
+  <% } %>
+
+  <h2>Account Options</h2>
+  <ul>
+    <li><a href="/edit-profile">Edit Profile</a></li>
+    <li><a href="/auth/logout">Logout</a></li>
+  </ul>
+</div>
+
+</body>
+</html>

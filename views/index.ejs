@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Blog Home</title>
+    <link rel="stylesheet" href="/css/styles.css">
+
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <% if (user) { %>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/auth/logout">Logout</a></li>
+                <% } else { %>
+                    <li><a href="/auth/login">Login</a></li>
+                    <li><a href="/auth/register">Register</a></li>
+                <% } %>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Welcome to the Blog</h1>
+
+        <!-- Search Form -->
+        <form method="GET" action="/">
+            <input 
+                type="text" 
+                name="search" 
+                placeholder="Search blogs..." 
+                value="<%= typeof search !== 'undefined' ? search : '' %>"
+                required 
+            />
+            <button type="submit">Search</button>
+        </form>
+
+        <h2>Latest Blogs</h2>
+        <% if (blogs && blogs.length > 0) { %>
+            <ul>
+                <% blogs.forEach(blog => { %>
+                    <li>
+                        <h3><a href="/blogs/<%= blog.id %>"><%= blog.title %></a></h3>
+                        <p><%= blog.content.substring(0, 100) %>...</p>
+                        <small>Author: <%= blog.author_name %></small>
+                    </li>
+                <% }) %>
+            </ul>
+        <% } else { %>
+            <p>No blogs found.</p>
+        <% } %>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 VibeCoding Blog. All rights reserved.</p>
+    </footer>
+</body>
+</html>

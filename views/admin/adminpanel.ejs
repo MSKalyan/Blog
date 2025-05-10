@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="/css/styles.css">
+
+</head>
+<body>
+    <h1>Admin Panel</h1>
+
+    <!-- Search and Filter Form -->
+    <form method="GET" action="/admin/panel">
+        <input type="text" name="search" value="<%= search || '' %>" placeholder="Search by name or email">
+        <select name="role">
+            <option value="">All Roles</option>
+            <option value="admin" <%= role === 'admin' ? 'selected' : '' %>>Admin</option>
+            <option value="user" <%= role === 'user' ? 'selected' : '' %>>User</option>
+        </select>
+        <button type="submit">Search</button>
+    </form>
+
+    <h2>Users List</h2>
+    <% if (users.length > 0) { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(user => { %>
+                    <tr>
+                        <td><%= user.name %></td>
+                        <td><%= user.email %></td>
+                        <td><%= user.role %></td>
+                        <td>
+                            <a href="/admin/users/<%= user.id %>/blogs">View Blogs</a> |
+                            <a href="/admin/users/<%= user.id %>/delete" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>No users found.</p>
+    <% } %>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+            <a href="/admin/panel?page=<%= currentPage - 1 %>&search=<%= search || '' %>&role=<%= role || '' %>">Previous</a>
+        <% } %>
+        <span>Page <%= currentPage %> of <%= totalPages %></span>
+        <% if (currentPage < totalPages) { %>
+            <a href="/admin/panel?page=<%= currentPage + 1 %>&search=<%= search || '' %>&role=<%= role || '' %>">Next</a>
+        <% } %>
+    </div>
+</body>
+</html>

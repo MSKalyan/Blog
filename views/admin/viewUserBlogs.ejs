@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blogs of User</title>
+    <link rel="stylesheet" href="/css/styles.css">
+
+</head>
+<body>
+    <h1>Blogs of User <%=  %></h1>
+    
+    <!-- Search and Filter Form -->
+    <form method="GET" action="/admin/users/<%= userId %>/blogs">
+        <!-- Search Input Field -->
+        <input type="text" name="search" value="<%= search %>" placeholder="Search blogs" />
+        
+        <!-- Category Filter Dropdown -->
+        <select name="category">
+            <option value="">All Categories</option>
+            <option value="Technology" <%= category === 'Technology' ? 'selected' : '' %>>Technology</option>
+            <option value="Health" <%= category === 'Health' ? 'selected' : '' %>>Health</option>
+            <option value="Lifestyle" <%= category === 'Lifestyle' ? 'selected' : '' %>>Lifestyle</option>
+            <!-- Add other categories as needed -->
+        </select>
+        
+        <!-- Submit Button -->
+        <button type="submit">Search</button>
+    </form>
+
+    <!-- Display Blogs -->
+    <ul>
+        <% blogs.forEach(blog => { %>
+            <li>
+                <h3><%= blog.title %></h3>
+                <img src="/uploads/<%= blog.image %>" alt="Blog Image" class="blog-image" />
+                <pre><%= blog.content %></pre>
+                <a href="/admin/blogs/<%= blog.id %>/delete">Delete</a>
+            </li>
+        <% }) %>
+    </ul>
+
+    <!-- Pagination Controls -->
+    <div>
+        <% if (currentPage > 1) { %>
+            <a href="/admin/users/<%= userId %>/blogs?page=<%= currentPage - 1 %>&search=<%= search %>&category=<%= category %>">Previous</a>
+        <% } %>
+        <span>Page <%= currentPage %> of <%= totalPages %></span>
+        <% if (currentPage < totalPages) { %>
+            <a href="/admin/users/<%= userId %>/blogs?page=<%= currentPage + 1 %>&search=<%= search %>&category=<%= category %>">Next</a>
+        <% } %>
+    </div>
+</body>
+</html>
