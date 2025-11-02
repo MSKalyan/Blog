@@ -1,0 +1,198 @@
+import { createBlog, getAllBlogs, getAllMyBlogs, getBlogById, updateBlog, deleteBlog as deleteBlogFromModel } from '../models/blogModel.js';
+import pool from "../models/db.js";
+
+// Controller to render the page for creating a new blog post
+export const getCreateBlog = (req, res) => {
+  res.render('blogs/create'); // Renders the create blog form (create.ejs)
+};
+
+// Controller to handle the form submission for creating a new blog post
+export const postCreateBlog = async (req, res) => {
+  const { title, content, category } = req.body;
+  const author = req.user.id; // Assuming req.user contains the authenticated user's data
+  const image = req.file ? req.file.filename : null; // Get the uploaded image filename if exists
+
+  try {
+    const newBlog = await createBlog(title, content, author, category, image); // Pass image to the model
+    res.redirect('/dashboard'); // Redirect to the list of all blogs after successful creation
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+};
+
+export const viewBlog = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const blog = await getBlogById(id);
+
+    if (!blog) {
+      return res.status(404).send('Blog not found');
+    }
+
+    // Fetch comments related to this blog
+    const commentResult = await pool.query(`
+      SELECT comments.*, users.name AS author_name
+      FROM comments
+      JOIN users ON comments.user_id = users.id
+      WHERE comments.blog_id = $1
+      ORDER BY comments.created_at DESC
+    `, [id]);
+
+    const comments = commentResult.rows;
+
+    const likeCountResult = await pool.query(
+      'SELECT COUNT(*) FROM likes WHERE blog_id = $1',
+      [id]
+    );
+
+    res.render('blogs/view', {
+      blog,
+      comments,
+      user: req.user,
+      imagePath: blog.image_path ? `/uploads/${blog.image_path}` : null // Add image path to be rendered in the view
+    });
+  } catch (err) {
+    console.error("Error fetching blog:", err);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Handle like/dislike via AJAX
+export const reactToBlog = async (req, res) => {
+  const { id: blogId } = req.params;
+  const userId = req.user.id;
+  const { type } = req.body; // 'like' or 'dislike'
+
+  if (!['like', 'dislike'].includes(type)) {
+    return res.status(400).json({ message: 'Invalid reaction type' });
+  }
+
+  try {
+    // Upsert reaction (either insert or update existing one)
+    await pool.query(`
+      INSERT INTO reactions (blog_id, user_id, type)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (blog_id, user_id)
+      DO UPDATE SET type = EXCLUDED.type, created_at = CURRENT_TIMESTAMP
+    `, [blogId, userId, type]);
+    
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+};
+
+// Get counts of likes and dislikes for a blog post
+export const getReactions = async (req, res) => {
+  const { id: blogId } = req.params;
+
+  try {
+    const likeRes = await pool.query(
+      'SELECT COUNT(*) FROM reactions WHERE blog_id = $1 AND type = $2',
+      [blogId, 'like']
+    );
+    const dislikeRes = await pool.query(
+      'SELECT COUNT(*) FROM reactions WHERE blog_id = $1 AND type = $2',
+      [blogId, 'dislike']
+    );
+
+    res.json({
+      likes: parseInt(likeRes.rows[0].count, 10),
+      dislikes: parseInt(dislikeRes.rows[0].count, 10)
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ likes: 0, dislikes: 0 });
+  }
+};
+
+// Controller to fetch all blog posts (public view for everyone)
+export const getBlogList = async (req, res) => {
+  try {
+    const blogs = await getAllBlogs(); // Fetch all blogs from the database
+    res.render('index', { blogs, user: req.user }); // Pass blogs and user (if logged in)
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Controller to fetch only the logged-in user's blogs
+export const getMyBlogs = async (req, res) => {
+  try {
+    const userId = req.user.id; // Get the logged-in user's ID
+    const blogs = await getAllMyBlogs(userId); // Fetch blogs where author matches userId
+    res.render('blogs/myblogs', { blogs }); // Render the "My Blogs" view
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Controller to fetch a specific blog post for editing (GET request)
+export const getEditBlog = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const blog = await getBlogById(id); // Get the blog from the database
+    if (!blog) {
+      return res.status(404).send('Blog not found');
+    }
+
+    // Check if the logged-in user is the author of the blog
+    if (blog.author !== req.user.id) {
+      return res.status(403).send('You can only edit your own blogs');
+    }
+
+    res.render('blogs/edit', { blog, user: req.user });  // Render the edit page
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Controller to handle the form submission for editing a blog post (POST request)
+export const postEditBlog = async (req, res) => {
+  const { id } = req.params;
+  const { title, content } = req.body;
+
+  try {
+    const blog = await getBlogById(id); // Use the getBlogByUserId function from the model
+    if (!blog) {
+      return res.status(404).send('Blog not found');
+    }
+
+    // Update the blog with new data
+    const updatedBlog = await updateBlog(id, title, content); // Use the updateBlog function from the model
+    res.redirect(`/blogs/${updatedBlog.id}`); // Redirect to the individual blog post after editing
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+};
+
+// Controller to handle the deletion of a blog post
+export const handleDeleteBlog = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const blog = await getBlogById(id);  // Fetch the blog from the database
+    if (!blog) {
+      return res.status(404).send('Blog not found');
+    }
+
+    // Check if the logged-in user is the author of the blog
+    if (blog.author !== req.user.id) {
+      return res.status(403).send('You can only delete your own blogs');
+    }
+
+    const deletedBlog = await deleteBlogFromModel(id); // Delete the blog
+    res.redirect('/dashboard'); // Redirect to the blogs list page after deletion
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+};
