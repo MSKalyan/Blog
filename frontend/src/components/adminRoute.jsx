@@ -33,49 +33,68 @@ function Navbar({ toggleSidebar }) {
   };
 
   return (
-    <nav style={styles.navbar}>
-      {/* Sidebar toggle */}
-      {isLoggedIn && <button onClick={toggleSidebar}>☰</button>}
+    <nav className="sticky top-0 z-50 bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        {/* Left section */}
+        <div className="flex items-center gap-4">
+          {isLoggedIn && (
+            <button
+              onClick={toggleSidebar}
+              className="text-xl font-semibold focus:outline-none"
+            >
+              ☰
+            </button>
+          )}
 
-      {/* Logo */}
-      <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
-        <h2 style={styles.logo}>MyBlog</h2>
-      </Link>
+          <Link to="/" className="text-xl font-bold text-gray-800">
+            MyBlog
+          </Link>
+        </div>
 
-      <div style={styles.links}>
-        {isLoggedIn ? (
-          <>
-            {/* Search bar */}
-            <input
-              type="text"
-              placeholder="Search blogs..."
-              style={styles.search}
-            />
+        {/* Right section */}
+        <div className="flex items-center gap-4">
+          {isLoggedIn ? (
+            <>
+              {/* Search */}
+              <input
+                type="text"
+                placeholder="Search blogs..."
+                className="hidden md:block px-4 py-2 rounded-full border text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
 
-            <div style={styles.rightSection}>
-              {/* Admin Panel */}
               {role === "admin" && (
-                <Link to="/admin" style={styles.adminBtn}>
+                <Link
+                  to="/admin"
+                  className="px-3 py-1.5 rounded-md bg-green-600 text-white text-sm hover:bg-green-700"
+                >
                   Admin Panel
                 </Link>
               )}
 
-              {/* Logout */}
-              <button onClick={handleLogout} style={styles.logoutBtn}>
+              <button
+                onClick={handleLogout}
+                className="px-3 py-1.5 rounded-md bg-red-600 text-white text-sm hover:bg-red-700"
+              >
                 Logout
               </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <Link to="/login" style={styles.link}>
-              Login
-            </Link>
-            <Link to="/register" style={styles.link}>
-              Register
-            </Link>
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-sm font-medium text-gray-700 hover:text-blue-600"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="text-sm font-medium text-gray-700 hover:text-blue-600"
+              >
+                Register
+              </Link>
+            </>
+          )}
+        </div>
       </div>
     </nav>
   );
