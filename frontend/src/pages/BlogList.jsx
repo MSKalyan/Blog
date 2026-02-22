@@ -13,10 +13,19 @@ function BlogList() {
         setName(userRes.data.name);
 
         const blogRes = await api.get("/blogs");
-        setBlogs(blogRes.data.data || []);
-      } catch (err) {
-        console.error("Not authenticated or error fetching data");
+	// ✅ depends on backend response shape
+	const blogArray = blogRes.data?.data || blogRes.data?.blogs || [];
+console.log("BLOG RES:", blogRes.data);
+	setBlogs(Array.isArray(blogArray) ? blogArray : []);
       }
+catch (err) {
+  if (err.response?.status === 401) {
+    console.log("User not authenticated");
+  } else {
+    console.error("Error fetching blogs", err);
+  }
+}
+
     };
 
     fetchUserAndBlogs();

@@ -1,7 +1,9 @@
 {
   "dependencies": {
-    "jwt-decode": "^4.0.0"
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "jwt-decode": "^4.0.0",
+    "nodemailer": "^7.0.13"
   },
   "proxy": "http://localhost:5000"
-
 }

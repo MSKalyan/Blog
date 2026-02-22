@@ -9,7 +9,9 @@ import MyBlogs from "./pages/MyBlogs";
 import CreateBlog from "./pages/CreateBlog";
 import EditProfile from "./pages/EditProfile";
 import AdminRoute from "./components/adminRoute";
-import Admin from "./pages/Admin"
+import Admin from "./pages/Admin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 function App() {
   return (
     <Router>
@@ -24,6 +26,8 @@ function App() {
           <Route path="/create" element={<CreateBlog/>}/>
           <Route path="/editprofile" element={<EditProfile/>}/>
           <Route path="/admin" element={<AdminRoute><Admin/></AdminRoute>}/>
+	  <Route path="/forgot-password" element={<ForgotPassword />} />
+	  <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Routes>
         </Layout>
     </Router>

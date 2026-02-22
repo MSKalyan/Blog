@@ -22,16 +22,19 @@ function Navbar({ toggleSidebar }) {
       });
   }, [location.pathname]);
 
-  const handleLogout = async () => {
-    try {
-      await api.post("/auth/logout");
-      setIsLoggedIn(false);
-      setRole(null);
-      navigate("/");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
-  };
+const handleLogout = async () => {
+  try {
+    await api.post("/auth/logout");
+  } catch (err) {
+    // ignore error
+  }
+console.log("API BASE URL:", process.env.REACT_APP_API_BASE_URL);
+  localStorage.removeItem("token");
+  setIsLoggedIn(false);
+  setRole(null);
+  navigate("/login");
+};
+
 const styles = {
   navbar: {
     display: "flex",

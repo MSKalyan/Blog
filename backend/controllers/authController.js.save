@@ -1,0 +1,41 @@
+
+{
+  res.json({message:'Login endpoint'});
+};
+
+export const postLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+
+    // If user not found
+    if (userResult.rows.length === 0) {
+      return res.status(400).send('Invalid credentials');
+    }
+
+    const user = userResult.rows[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    // If password does not match
+    if (!isMatch) {
+      return res.status(400).send('Invalid credentials');
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user.id, name: user.name, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    // Set the token in the cookie
+   res.cookie("token", token, {
+  httpOnly: true,
+  sameSite: "none",
+  secure: false,
+path:"/",
+  maxAge: 60 * 60 * 1000
+};
+
+export const getRegister = (req, res) => {
+  res.json({message:'Register endpoint'});
+};
+
+export const pos

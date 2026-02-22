@@ -1,7 +1,7 @@
 import express from "express";
 import { postLogin, postRegister, logout,updateProfile } from "../controllers/authController.js";
 import requireAuth from "../middleware/authMiddleware.js";
-
+import { forgotPassword, resetPassword } from "../controllers/authController.js";
 const router = express.Router();
 
 router.post("/login", postLogin);
@@ -16,6 +16,9 @@ router.get("/me", requireAuth, (req, res) => {
     role: req.user.role,
   });
 });
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
+
 router.put("/update", requireAuth, updateProfile);
 
 export default router;
